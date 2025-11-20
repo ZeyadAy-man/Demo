@@ -15,16 +15,21 @@ export default function CharacterController(props) {
   const { camera, scene: threeScene } = useThree();
   const [isDragging, setIsDragging] = useState(false);
   const mouseX = useRef(0);
-  const cameraRotationY = useRef(0);
+  const mouseY = useRef(0);
+
+  // target vs current rotation for smoothing
+  const targetYaw = useRef(0);
+  const targetPitch = useRef(0);
+  const currentYaw = useRef(0);
+  const currentPitch = useRef(0);
 
   // --- pivot for camera ---
   const cameraPivot = useRef(new THREE.Object3D());
 
   useEffect(() => {
     threeScene.add(cameraPivot.current);
-    cameraPivot.current.add(camera);
     camera.position.set(0, 6, -10);
-    camera.lookAt(new THREE.Vector3(0, -10, 0));
+    camera.lookAt(new THREE.Vector3(0, -8, 0));
   }, [camera, threeScene]);
 
   // --- keyboard ---
@@ -45,13 +50,22 @@ export default function CharacterController(props) {
     const mouseDown = (e) => {
       setIsDragging(true);
       mouseX.current = e.clientX;
+      mouseY.current = e.clientY;
     };
     const mouseUp = () => setIsDragging(false);
     const mouseMove = (e) => {
       if (!isDragging) return;
       const deltaX = e.clientX - mouseX.current;
+      const deltaY = e.clientY - mouseY.current;
+
       mouseX.current = e.clientX;
-      cameraRotationY.current -= deltaX * 0.005;
+      mouseY.current = e.clientY;
+
+      targetYaw.current -= deltaX * 0.005;   // yaw target
+      targetPitch.current -= deltaY * 0.005; // pitch target
+
+      // clamp pitch
+      targetPitch.current = Math.max(-Math.PI / 6, Math.min(Math.PI / 4, targetPitch.current));
     };
 
     window.addEventListener("mousedown", mouseDown);
@@ -86,14 +100,13 @@ export default function CharacterController(props) {
   };
 
   // --- initial idle pose ---
-  // --- initial idle pose ---
   useEffect(() => {
     if (actions["Idle"]) {
       const idle = actions["Idle"];
       idle.reset();
-      idle.setLoop(THREE.LoopRepeat, Infinity); // loop Idle
-      idle.paused = false; // start playing
-      idle.fadeIn(0.2).play(); // smooth fade-in
+      idle.setLoop(THREE.LoopRepeat, Infinity);
+      idle.paused = false;
+      idle.fadeIn(0.2).play();
       currentAction.current = idle;
     }
   }, [actions]);
@@ -107,16 +120,16 @@ export default function CharacterController(props) {
     const right = keys.current["d"] || keys.current["arrowright"];
     const ctrl = keys.current["control"];
 
-    let speed = 3; // normal walk speed
+    let speed = 3;
     let actionName = null;
 
     if (forward || backward) {
       if (ctrl) {
-        speed = 16; // double speed for running
-        actionName = "Run"; // use Run animation
+        speed = 16;
+        actionName = "Run";
       } else {
         speed = 6;
-        actionName = "Walk"; // use Walk animation
+        actionName = "Walk";
       }
 
       const action = actions[actionName];
@@ -125,7 +138,7 @@ export default function CharacterController(props) {
           action.reset();
           action.paused = false;
           action.setLoop(THREE.LoopRepeat, Infinity);
-          action.timeScale = -1; // reverse for backward
+          action.timeScale = -1;
           action.fadeIn(0.2).play();
           if (currentAction.current && currentAction.current !== action) {
             currentAction.current.fadeOut(0.2);
@@ -139,7 +152,6 @@ export default function CharacterController(props) {
         }
       }
     } else {
-      // idle
       if (actions["Idle"] && currentAction.current !== actions["Idle"]) {
         playAction("Idle");
         currentAction.current.timeScale = 1;
@@ -163,18 +175,33 @@ export default function CharacterController(props) {
         dir.clone().multiplyScalar(-speed * delta)
       );
 
+    // --- smooth camera rotation ---
+    currentYaw.current = THREE.MathUtils.lerp(currentYaw.current, targetYaw.current, 0.1);
+    currentPitch.current = THREE.MathUtils.lerp(currentPitch.current, targetPitch.current, 0.1);
+
     // --- move pivot to character ---
     cameraPivot.current.position.copy(characterRef.current.position);
-    // cameraPivot.current.position.y = cameraPivot.current.position.y
-    cameraPivot.current.rotation.y = cameraRotationY.current;
+
+    // --- apply yaw/pitch via quaternion ---
+    const q = new THREE.Quaternion();
+    q.setFromEuler(new THREE.Euler(currentPitch.current, currentYaw.current, 0, "YXZ"));
+    cameraPivot.current.quaternion.copy(q);
+
+    // --- keep camera at fixed offset ---
+    const offset = new THREE.Vector3(0, 16, -24); // behind & above
+    camera.position.copy(offset);
+    camera.position.applyQuaternion(cameraPivot.current.quaternion);
+    camera.position.add(cameraPivot.current.position);
+    
+    camera.lookAt(cameraPivot.current.position);
   });
 
-    useEffect(() => {
+  useEffect(() => {
     scene.traverse((child) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
-        
+
         if (child.material) {
           child.material.envMapIntensity = 1;
           child.material.needsUpdate = true;
@@ -188,13 +215,7 @@ export default function CharacterController(props) {
 
   return (
     <RigidBody type="kinematicPosition" colliders="trimesh">
-      {/* <group ref={characterRef} scale={3} position={[0, -14, 0]}> */}
-      {/* <mesh position={[0, 1, 0]}> */}
-        {/* <cylinderGeometry args={[0.35, 0.35]}/> */}
-        {/* <meshStandardMaterial/> */}
-      {/* </mesh> */}
-        <primitive ref={characterRef} object={scene} scale={3} position={[0, -14, 0]}/>
-      {/* </group> */}
+      <primitive ref={characterRef} object={scene} scale={3} position={[0, -14, 6]} />
     </RigidBody>
   );
 }

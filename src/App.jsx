@@ -10,7 +10,6 @@ export default function App() {
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       <Canvas shadows camera={{ position: [20, 15, 20], fov: 45 }}>
-        <Physics gravity={[0, -9.81, 0]}>
           {/* LIGHTS */}
           <directionalLight
             castShadow
@@ -32,9 +31,11 @@ export default function App() {
           {/* ENVIRONMENT */}
           <Environment preset="sunset" />
 
+        <Physics gravity={[0, -9.81, 0]} >
           {/* PLAYER CONTROLLER – NOT inside RigidBody */}
+          <RigidBody type="kinematicPosition" colliders="trimesh">
           <CharacterController start={[0, 0, 0]} />
-
+          </RigidBody>
           {/* CITY COLLIDER */}
           <RigidBody type="fixed" colliders="trimesh">
             <City position={[4, 0.57, 0]} scale={[30, 30, 30]} />
@@ -43,7 +44,7 @@ export default function App() {
           {/* OPTIONAL */}
           {/* <Mall position={[-38, -1, 2]} /> */}
 
-          <Scene />
+          {/* <Scene /> */}
         </Physics>
       </Canvas>
     </div>
