@@ -6,7 +6,6 @@ import {
   Character,
 } from "./Utils/CharacterLoader";
 import { Joystick } from "react-joystick-component";
-import SquareDroneCamera from "./Utils/CameraDroneView";
 
 export default function App() {
   // const [deviceType, setDeviceType] = useState("keyboard");
@@ -23,7 +22,7 @@ export default function App() {
     <div style={{ width: "100vw", height: "100vh" }}>
       <Canvas
         shadows
-        camera={{ near: 0.1, far: 18000, position: [20, 15, 20], fov: 45 }}
+        camera={{ near: 0.1, far: 500, position: [20, 15, 20], fov: 45 }}
         // gl={{ logarithmicDepthBuffer: true }}
       >
         <Environment preset="sunset" />

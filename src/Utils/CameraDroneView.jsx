@@ -10,13 +10,13 @@ function ease(t) {
 
 const center = new THREE.Vector3(0, 0, 0);
 const pathCorners = [
-  new THREE.Vector3(0, 700, 4499), // South
-  new THREE.Vector3(4500, 700, 4500), // Eastern South
-  new THREE.Vector3(4500, 700, -4500), // Eastern North
-  new THREE.Vector3(-4500, 700, -4500), // Western North
-  new THREE.Vector3(-4500, 700, 4500), // Western South
-  new THREE.Vector3(0, 700, 4500), // South
-  new THREE.Vector3(0, 700, -4500), // North
+  new THREE.Vector3(0, 2.1, 144), // South
+  new THREE.Vector3(145, 2.1, 145), // Eastern South
+  new THREE.Vector3(145, 2.1, -145), // Eastern North
+  new THREE.Vector3(-145, 2.1, -145), // Western North
+  new THREE.Vector3(-145, 2.1, 145), // Western South
+  new THREE.Vector3(0, 2.1, 145), // South
+  new THREE.Vector3(0, 2.1, -145), // North
 ];
 
 export default function SquareDroneCamera() {
@@ -35,6 +35,10 @@ export default function SquareDroneCamera() {
     if (segment.current >= pathCorners.length - 1) {
       segment.current = 0;
       progress.current = 0;
+      // reset look target to center
+      lookTarget.current.copy(center);
+      desiredLook.current.copy(center);
+      setFlag(false);
     }
     progress.current += delta * speed;
     const t = ease(progress.current);

@@ -34,7 +34,7 @@ export default function City(props) {
       file: useGLTF("/bicycle_parking.glb"),
       position: [-60, -1.1, -40],
       rotation: [0, -Math.PI / 2, 0],
-      scale: [6, 6, 6],
+      scale: [7, 4, 4],
     },
     {
       file: useGLTF("/metal_billboard_advertising_single_sided_free.glb"),
