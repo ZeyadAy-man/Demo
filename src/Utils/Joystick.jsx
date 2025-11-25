@@ -1,54 +1,43 @@
-// CharacterControllerJoystick.jsx
+// CharacterControllersJoystick.jsx
 import { useGLTF, useAnimations } from "@react-three/drei";
 import { useRef, useEffect, useState } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { RigidBody } from "@react-three/rapier";
 import { CameraController, CameraController1 } from "./CameraController";
-import { useThree } from "@react-three/fiber";
 import { useControls } from "leva";
 import SquareDroneCamera from "./CameraDroneView";
+
+// -------------------- THIRD-PERSON JOYSTICK CONTROLLER --------------------
 export function CharacterControllerJoystick({ scaleR, joystickVector }) {
   const [cameraHigh, setCameraHigh] = useState(25);
 
-  // Load character + animations
   const { scene, animations } = useGLTF("/character1.glb");
   const characterRef = useRef();
   const { actions, mixer } = useAnimations(animations, characterRef);
   const currentAction = useRef(null);
 
-  // Helper: smooth animation switching
   const playAction = (name, fadeDuration = 0.2) => {
     const next = actions[name];
     if (!next) return;
     if (currentAction.current === next) return;
-
     next.reset();
     next.setLoop(THREE.LoopRepeat, Infinity);
     next.fadeIn(fadeDuration).play();
-
-    if (currentAction.current) {
-      currentAction.current.fadeOut(fadeDuration);
-    }
+    if (currentAction.current) currentAction.current.fadeOut(fadeDuration);
     currentAction.current = next;
   };
 
-  // Initial Idle pose
   useEffect(() => {
-    if (actions["Idle"]) {
-      playAction("Idle", 0.2);
-    }
+    if (actions["Idle"]) playAction("Idle", 0.2);
   }, [actions]);
 
-  // Movement + animation switching
   useFrame((_, delta) => {
     if (!characterRef.current) return;
-
-    const { x, y } = joystickVector; // joystick input
+    const { x, y } = joystickVector || { x: 0, y: 0 };
     let speed = 3;
 
     if (x !== 0 || y !== 0) {
-      // Run if joystick pushed strongly
       const magnitude = Math.sqrt(x * x + y * y);
       if (magnitude > 0.7) {
         speed = 16;
@@ -58,15 +47,12 @@ export function CharacterControllerJoystick({ scaleR, joystickVector }) {
         playAction("Walk");
       }
 
-      // Movement vector
       const move = new THREE.Vector3(x, 0, -y).normalize();
       characterRef.current.position.add(move.multiplyScalar(speed * delta));
 
-      // Rotate character to face movement direction
       const targetRotation = Math.atan2(move.x, move.z);
       characterRef.current.rotation.y = targetRotation;
 
-      // Backward animation reversal
       if (currentAction.current) {
         currentAction.current.timeScale = y >= 0 ? 1 : -1;
       }
@@ -76,13 +62,9 @@ export function CharacterControllerJoystick({ scaleR, joystickVector }) {
     }
   });
 
-  // Leva slider for camera height
   useEffect(() => setCameraHigh(scaleR), [scaleR]);
-
-  // Cleanup
   useEffect(() => () => mixer?.stopAllAction(), [mixer]);
 
-  // Shadow setup
   useEffect(() => {
     scene.traverse((child) => {
       if (child.isMesh) {
@@ -99,66 +81,50 @@ export function CharacterControllerJoystick({ scaleR, joystickVector }) {
   return (
     <>
       <RigidBody type="kinematicPosition" colliders="trimesh">
-        <primitive
-          ref={characterRef}
-          object={scene}
-          scale={3}
-          position={[0, -14, 10]}
-        />
+        <primitive ref={characterRef} object={scene} scale={3} position={[0, -14, 10]} />
       </RigidBody>
       <CameraController targetRef={characterRef} cameraHigh={cameraHigh} />
     </>
   );
 }
 
+// -------------------- FIRST-PERSON JOYSTICK CONTROLLER --------------------
 export function CharacterController1Joystick({ scaleR, joystickVector }) {
   const [cameraHigh, setCameraHigh] = useState(25);
   const [currentActionName, setCurrentActionName] = useState("Idle");
 
-  // Load character + animations
   const { scene, animations } = useGLTF("/character1.glb");
   const characterRef = useRef();
   const { actions, mixer } = useAnimations(animations, characterRef);
   const currentAction = useRef(null);
 
-  // Access the active camera
   const { camera } = useThree();
 
-  // Helper: smooth animation switching
   const playAction = (name) => {
     if (!actions[name]) return;
     const next = actions[name];
     if (currentAction.current === next && !currentAction.current.paused) return;
-
     next.reset();
     next.setLoop(THREE.LoopRepeat, Infinity);
     next.paused = false;
     next.fadeIn(0.2).play();
-
     if (currentAction.current && currentAction.current !== next) {
       currentAction.current.fadeOut(0.2);
     }
-
     currentAction.current = next;
     setCurrentActionName(name);
   };
 
-  // Initial Idle pose
   useEffect(() => {
-    if (actions["Idle"]) {
-      playAction("Idle");
-    }
+    if (actions["Idle"]) playAction("Idle");
   }, [actions]);
 
-  // Movement + animation switching
   useFrame((_, delta) => {
     if (!characterRef.current) return;
-
-    const { x, y } = joystickVector; // joystick input
+    const { x, y } = joystickVector || { x: 0, y: 0 };
     let speed = 3;
 
     if (x !== 0 || y !== 0) {
-      // Run if joystick pushed strongly
       const magnitude = Math.sqrt(x * x + y * y);
       if (magnitude > 0.7) {
         speed = 16;
@@ -173,36 +139,30 @@ export function CharacterController1Joystick({ scaleR, joystickVector }) {
       if (currentAction.current) currentAction.current.timeScale = 1;
     }
 
-    // --- Camera-relative movement ---
+    // Camera-relative movement
     const camDir = new THREE.Vector3();
     camera.getWorldDirection(camDir);
-    camDir.y = 0; // flatten so we only move horizontally
+    camDir.y = 0;
     camDir.normalize();
 
     const camRight = new THREE.Vector3();
     camRight.crossVectors(camDir, characterRef.current.up).normalize();
 
     const move = new THREE.Vector3();
-    // joystick y = forward/back, x = left/right
     move.add(camDir.clone().multiplyScalar(y));
     move.add(camRight.clone().multiplyScalar(x));
 
     if (move.lengthSq() > 0) {
       move.normalize();
       characterRef.current.position.add(move.multiplyScalar(speed * delta));
-
-      // Rotate character to face movement direction
       const targetRotation = Math.atan2(move.x, move.z);
       characterRef.current.rotation.y = targetRotation;
     }
   });
 
   useEffect(() => setCameraHigh(scaleR), [scaleR]);
-
-  // Cleanup
   useEffect(() => () => mixer?.stopAllAction(), [mixer]);
 
-  // Shadow setup
   useEffect(() => {
     scene.traverse((child) => {
       if (child.isMesh) {
@@ -237,7 +197,8 @@ export function CharacterController1Joystick({ scaleR, joystickVector }) {
   );
 }
 
-export function CharacterJoystick() {
+// -------------------- MODE SWITCHER --------------------
+export function CharacterJoystick({ joystickVector }) {
   const { scaleR, mode } = useControls({
     scaleR: {
       value: 25,
@@ -255,8 +216,12 @@ export function CharacterJoystick() {
 
   return (
     <>
-      {mode === "First-Prespective" && <CharacterController1Joystick scaleR={scaleR} />}
-      {mode === "Third-Prespective" && <CharacterControllerJoystick scaleR={scaleR} />}
+      {mode === "First-Prespective" && (
+        <CharacterController1Joystick scaleR={scaleR} joystickVector={joystickVector} />
+      )}
+      {mode === "Third-Prespective" && (
+        <CharacterControllerJoystick scaleR={scaleR} joystickVector={joystickVector} />
+      )}
       {mode === "Cinematic View" && <SquareDroneCamera />}
     </>
   );
