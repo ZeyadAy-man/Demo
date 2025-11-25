@@ -8,8 +8,8 @@ import { useDeviceType } from "./Utils/DeviceType";
 import { CharacterJoystick } from "./Utils/Joystick";
 
 export default function App() {
-  const [deviceType, setDeviceType] = useDeviceType();
-
+  const deviceType = useDeviceType()
+  console.log(deviceType)
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       <Canvas
@@ -38,7 +38,7 @@ export default function App() {
         <pointLight position={[-10, 5, -10]} intensity={0.3} />
         <ambientLight intensity={3} />
         <Physics gravity={[0, -9.81, 0]}>
-          {deviceType === "touch" ? <CharacterJoystick/> : <Character/>}
+          {true ? <CharacterJoystick/> : <Character/>}
           <OrbitControls />
           <City position={[4, -12.8, 0]} scale={[1, 1, 1]} />
         </Physics>

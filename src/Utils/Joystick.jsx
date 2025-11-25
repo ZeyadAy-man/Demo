@@ -7,7 +7,7 @@ import { RigidBody } from "@react-three/rapier";
 import { CameraController, CameraController1 } from "./CameraController";
 import { useThree } from "@react-three/fiber";
 import { useControls } from "leva";
-
+import SquareDroneCamera from "./CameraDroneView";
 export function CharacterControllerJoystick({ scaleR, joystickVector }) {
   const [cameraHigh, setCameraHigh] = useState(25);
 
@@ -255,8 +255,8 @@ export function CharacterJoystick() {
 
   return (
     <>
-      {mode === "First-Prespective" && <CharacterController1 scaleR={scaleR} />}
-      {mode === "Third-Prespective" && <CharacterController scaleR={scaleR} />}
+      {mode === "First-Prespective" && <CharacterController1Joystick scaleR={scaleR} />}
+      {mode === "Third-Prespective" && <CharacterControllerJoystick scaleR={scaleR} />}
       {mode === "Cinematic View" && <SquareDroneCamera />}
     </>
   );
