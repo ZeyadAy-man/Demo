@@ -53,8 +53,9 @@ export default function App() {
             <OrbitControls />
           {/* </RigidBody> */}
           {/* <RigidBody type="fixed" colliders="trimesh"> */}
-            <City position={[4, 0.57, 0]} scale={[30, 30, 30]} />
-          {/* </RigidBody> */}
+{/* <City position={[4, 0.57, 0]} scale={[3, 3, 3]} /> */}
+            <City position={[4, -12.8, 0]} scale={[1, 1, 1]} />
+                      {/* </RigidBody> */}
         </Physics>
         {/* <Sky360 /> */}
       </Canvas>
