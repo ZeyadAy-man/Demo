@@ -168,7 +168,8 @@ export default function City(props) {
       <AdvertisingPlane rotation={[0, Math.PI / 2, 0]} position={[126.2, 148.4, -60]} args={[35, 173.5]}/>
       <AdvertisingPlane rotation={[0, Math.PI, 0]} position={[102.2, 148.4, -83.9]} args={[35, 173.5]}/>
       <AdvertisingPlane rotation={[0, -Math.PI / 2, 0]} position={[78.5, 148.4, -59.9]} args={[35, 173.5]}/>
-      <AdvertisingPlane rotation={[0, 0, 0]} position={[0, 55, -205]} args={[35, 60.5]}/>      <AdvertisingPlane rotation={[0, Math.PI / 2, 0]} position={[-27, 55, 105]} args={[35, 60.5]}/>
+      <AdvertisingPlane rotation={[-Math.PI / 90, Math.PI / 4, 0]} position={[11.5, 55, -252.5]} args={[25, 60.5]}/>      <AdvertisingPlane rotation={[0, Math.PI / 2, 0]} position={[-27, 55, 105]} args={[35, 60.5]}/>
+      <AdvertisingPlane rotation={[-Math.PI / 90, -Math.PI / 4, 0]} position={[-11.5, 55, -252.5]} args={[25, 60.5]}/>      <AdvertisingPlane rotation={[0, Math.PI / 2, 0]} position={[-27, 55, 105]} args={[35, 60.5]}/>
 
     
     </group>
