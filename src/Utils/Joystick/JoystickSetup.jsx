@@ -1,5 +1,5 @@
 import JoystickFirstPersonSetup from "./FirstPersonJoystick/FirstPersonJoystick.jsx";
-import JoystickThirdPersonSetup  from "./ThirdPersonJoystick/ThirdPersonJoystick.jsx";
+import JoystickThirdPersonSetup from "./ThirdPersonJoystick/ThirdPersonJoystick.jsx";
 import { CharacterModel } from "../AvatarLoader/MainCharacterModel.jsx";
 import { Suspense, useRef } from "react";
 import SquareDroneCamera from "../CameraDroneView";
@@ -10,7 +10,14 @@ export default function JoystickSetup(props) {
 
   return (
     <>
-
+      <Suspense fallback={null}>
+        {props.playerRef?.current && (
+          <CharacterModel
+            playerRef={props.playerRef}
+            animationState={props.animationState}
+          />
+        )}
+      </Suspense>
 
       {props.mode === "First-Prespective" && (
         <JoystickFirstPersonSetup

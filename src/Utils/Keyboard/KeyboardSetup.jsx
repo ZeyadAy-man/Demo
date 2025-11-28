@@ -6,14 +6,25 @@ import { Suspense, useRef } from "react";
 import KeyboardFirstPersonSetup from "./FirstPersonKeyboard/FirstPersonKeyboard.jsx";
 import KeyboardThirdPersonSetup from "./ThirdPersonKeyboard/ThirdPersonKeyboard.jsx";
 import { CharacterModel } from "../AvatarLoader/MainCharacterModel.jsx";
-
-export default function KeyboardSetup({ scaleR, mode, playerRef: externalPlayerRef, animationState, setAnimationState }) {
+import { useEffect } from "react";
+export default function KeyboardSetup({ scaleR, mode, playerRef: externalPlayerRef, animationState, setAnimationState, initialPosition={x:0, y:-14, z:0} }) {
   const localPlayerRef = useRef();
   const playerRef = externalPlayerRef || localPlayerRef;
   const yaw = useRef(0);
   const pitch = useRef(0);
   
   const { moveInput, lookInput, isRunning } = useKeyboardInput();
+
+    // Set initial position
+  useEffect(() => {
+    if (playerRef.current) {
+      playerRef.current.position.set(
+        initialPosition.x,
+        initialPosition.y,
+        initialPosition.z
+      );
+    }
+  }, []);
 
   return (
     <>
