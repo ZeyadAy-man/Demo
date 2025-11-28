@@ -1,22 +1,23 @@
 import { Canvas } from "@react-three/fiber";
-import { Environment, OrbitControls } from "@react-three/drei";
-import { Physics, RigidBody } from "@react-three/rapier";
+import { Environment } from "@react-three/drei";
+import { Physics } from "@react-three/rapier";
 import City from "./City";
-import { Character } from "./Utils/CharacterLoader";
 import { useDeviceType } from "./Utils/DeviceType";
-import { Suspense, useState, useRef } from "react";
-import {
-  JoystickGUI,
-  JoystickFirstPersonCamera,
-  JoystickFirstPersonMovement,
-  CharacterModel
-} from "./Utils/Joystick/Joystick";
+import { useState, useRef } from "react";
+
+import { JoystickGUI } from "./Utils/Joystick/JoystickGUI";
+import JoystickSetup from "./Utils/Joystick/JoystickSetup";
+import CharacterSetup from "./Utils/Setup";
 
 export default function App() {
   const [isDay, setIsDay] = useState(true);
   const [selectedPosition, setSelectedPosition] = useState([0, 0, 0]);
   const [showCoordinates, setShowCoordinates] = useState(true);
   const [clickedObject, setClickedObject] = useState(null);
+  const [animationState, setAnimationState] = useState("Idle");
+
+  const [scaleR, setScaleR] = useState(25);
+  const [mode, setMode] = useState("Cinematic View");
 
   const [moveInput, setMoveInput] = useState({ x: 0, y: 0 });
   const [lookInput, setLookInput] = useState({ x: 0, y: 0 });
@@ -802,7 +803,6 @@ export default function App() {
         )}
 
         <Physics>
-          <OrbitControls />
           <City
             position={[4, -12.8, 0]}
             scale={[1, 1, 1]}
@@ -811,35 +811,31 @@ export default function App() {
               setClickedObject(objectName);
             }}
           />
-          {useDeviceType() === "touch" ? (
-            <>
-              <group ref={playerRef} position={[0, 0, 5]} />
-              <Suspense fallback={null}>
-                <CharacterModel playerRef={playerRef} />
-              </Suspense>
-
-              {/* Movement Logic */}
-              <JoystickFirstPersonMovement
-                moveInput={moveInput}
-                yaw={yaw}
-                playerRef={playerRef}
-              />
-              {/* Camera Logic */}
-              <JoystickFirstPersonCamera
-                lookInput={lookInput}
-                playerRef={playerRef}
-                yaw={yaw}
-                pitch={pitch}
-              />
-            </>
-          ) : (
-            <Character />
-          )}
         </Physics>
+        <mesh ref={playerRef} position={[0, 0, 0]} visible={false}>
+          <boxGeometry args={[1, 2, 1]} />
+        </mesh>
+        <CharacterSetup
+          playerRef={playerRef}
+          moveInput={moveInput}
+          lookInput={lookInput}
+          yaw={yaw}
+          pitch={pitch}
+          animationState={animationState}
+          setAnimationState={setAnimationState}
+          scaleR={scaleR} // NEW
+          mode={mode} // NEW
+        />
       </Canvas>
       {useDeviceType() === "touch" && (
         <JoystickGUI onMoveChange={setMoveInput} onLookChange={setLookInput} />
       )}
+      <CustomControls
+        scaleR={scaleR}
+        mode={mode}
+        onScaleChange={setScaleR}
+        onModeChange={setMode}
+      />
     </div>
   );
 }
@@ -871,5 +867,152 @@ function Cursor({ position }) {
         <meshBasicMaterial color="#00ff00" />
       </mesh>
     </group>
+  );
+}
+
+function CustomControls({ scaleR, mode, onScaleChange, onModeChange }) {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: "10px",
+        left: "10px",
+        background: "rgba(0, 0, 0, 0.85)",
+        color: "white",
+        padding: "20px",
+        borderRadius: "10px",
+        zIndex: 1000,
+        fontFamily: "system-ui, sans-serif",
+        minWidth: "260px",
+        backdropFilter: "blur(10px)",
+        border: "1px solid rgba(255, 255, 255, 0.1)",
+        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
+      }}
+      onMouseDown={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <h3
+        style={{
+          margin: "0 0 20px 0",
+          fontSize: "16px",
+          color: "#00ff88",
+          fontWeight: "600",
+        }}
+      >
+        🎮 Controls
+      </h3>
+
+      {/* Scale Range Control */}
+      <div style={{ marginBottom: "25px" }}>
+        <label
+          style={{
+            display: "block",
+            marginBottom: "10px",
+            fontSize: "13px",
+            color: "#aaa",
+          }}
+        >
+          Scale Range
+        </label>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <input
+            type="range"
+            min="18"
+            max="48.87"
+            step="0.01"
+            value={scaleR}
+            onChange={(e) => onScaleChange(parseFloat(e.target.value))}
+            onKeyDown={(e) => e.stopPropagation()}
+            style={{
+              flex: 1,
+              cursor: "pointer",
+              accentColor: "#00ff88",
+            }}
+          />
+          <span
+            style={{
+              fontSize: "14px",
+              fontWeight: "500",
+              minWidth: "50px",
+              color: "#00ff88",
+            }}
+          >
+            {scaleR.toFixed(2)}
+          </span>
+        </div>
+      </div>
+
+      {/* Camera Mode Control */}
+      <div>
+        <label
+          style={{
+            display: "block",
+            marginBottom: "10px",
+            fontSize: "13px",
+            color: "#aaa",
+          }}
+        >
+          Camera Mode
+        </label>
+        <select
+          value={mode}
+          onChange={(e) => {
+            onModeChange(e.target.value);
+            setTimeout(() => e.target.blur(), 100);
+          }}
+          onKeyDown={(e) => {
+            if (
+              ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(
+                e.key
+              )
+            ) {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+          }}
+          style={{
+            width: "100%",
+            padding: "10px 12px",
+            background: "rgba(255, 255, 255, 0.1)",
+            color: "white",
+            border: "1px solid rgba(255, 255, 0.2)",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontSize: "13px",
+            fontWeight: "500",
+          }}
+        >
+          <option
+            value="First-Prespective"
+            style={{ background: "#1a1a1a", color: "white" }}
+          >
+            First-Perspective
+          </option>
+          <option
+            value="Third-Prespective"
+            style={{ background: "#1a1a1a", color: "white" }}
+          >
+            Third-Perspective
+          </option>
+          <option
+            value="Cinematic View"
+            style={{ background: "#1a1a1a", color: "white" }}
+          >
+            Cinematic View
+          </option>
+        </select>
+      </div>
+
+      <div
+        style={{
+          marginTop: "15px",
+          fontSize: "11px",
+          color: "#666",
+          fontStyle: "italic",
+        }}
+      >
+        💡 Use WASD + Arrow keys to move
+      </div>
+    </div>
   );
 }

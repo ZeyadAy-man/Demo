@@ -1,5 +1,6 @@
 import { useGLTF } from "@react-three/drei";
 import { useEffect } from "react";
+import AdvertisingPlane from "./Utils/Advertising";
 
 export default function City(props) {
   const { onObjectClick, ...otherProps } = props;
@@ -18,14 +19,14 @@ export default function City(props) {
       file: useGLTF("/skyscraper (1).glb"),
       position: [130, -1, -60],
       rotation: [0, Math.PI / 2, 0],
-      scale: [0.9, 0.3, 0.9],
+      scale: [0.9, 1.2, 0.9],
       name: "Skyscraper 1"
     },
     {
       file: useGLTF("/al_faisaliyah_center_riyadh.glb"),
-      position: [0, 0, -175],
+      position: [0, -1.3, -184],
       rotation: [0, 0, 0],
-      scale: [0.008, 0.008, 0.008],
+      scale: [0.008, 0.015, 0.008],
       name: "Al Faisaliyah Center"
     },
     {
@@ -39,7 +40,7 @@ export default function City(props) {
       file: useGLTF("/bicycle_parking.glb"),
       position: [-60, -1.1, -40],
       rotation: [0, -Math.PI / 2, 0],
-      scale: [7, 4, 4],
+      scale: [7, 3.5, 3.5],
       name: "Bicycle Parking"
     },
     {
@@ -51,14 +52,14 @@ export default function City(props) {
     },
     {
       file: useGLTF("/gas-station2.glb"),
-      position: [-60, -1.1, -100],
+      position: [-50, -1.1, -98],
       rotation: [0, Math.PI / 2, 0],
-      scale: [1.5, 1.5, 1.5],
+      scale: [1.29, 3.5, 1.69],
       name: "Gas Station"
     },
     {
       file: useGLTF("/ferrari.glb"),
-      position: [-68, -1.1, -110],
+      position: [-60, -0.9, -105],
       rotation: [0, Math.PI / 2, 0],
       scale: [1, 1, 1],
       name: "Ferrari Car"
@@ -74,7 +75,7 @@ export default function City(props) {
       file: useGLTF("/modern_building_002.glb"),
       position: [-38, -1.3, 45],
       rotation: [0, Math.PI / 2 , 0],
-      scale: [0.3, 0.3, 0.3],
+      scale: [0.3, 0.7, 0.3],
       name: "Modern Building"
     },
     {
@@ -88,7 +89,7 @@ export default function City(props) {
       file: useGLTF("/skyscraper_tower.glb"),
       position: [40, -2.5, 45],
       rotation: [0, Math.PI / 2, 0],
-      scale: [0.85, 0.85, 0.85],
+      scale: [0.85, 2.85, 0.85],
       name: "Skyscraper Tower"
     },
   ];
@@ -162,6 +163,14 @@ export default function City(props) {
           onClick={(event) => handleModelClick(event, m.name)}
         />
       ))}
+      <AdvertisingPlane rotation={[0, Math.PI / 6, 0]} position={[-39.1, 38.4, -38]} args={[43.4, 13.5]}/>
+      <AdvertisingPlane rotation={[0, 0, 0]} position={[102.7, 148.4, -36.1]} args={[35, 173.5]}/>
+      <AdvertisingPlane rotation={[0, Math.PI / 2, 0]} position={[126.2, 148.4, -60]} args={[35, 173.5]}/>
+      <AdvertisingPlane rotation={[0, Math.PI, 0]} position={[102.2, 148.4, -83.9]} args={[35, 173.5]}/>
+      <AdvertisingPlane rotation={[0, -Math.PI / 2, 0]} position={[78.5, 148.4, -59.9]} args={[35, 173.5]}/>
+      <AdvertisingPlane rotation={[0, 0, 0]} position={[0, 55, -205]} args={[35, 60.5]}/>      <AdvertisingPlane rotation={[0, Math.PI / 2, 0]} position={[-27, 55, 105]} args={[35, 60.5]}/>
+
+    
     </group>
   );
 }
